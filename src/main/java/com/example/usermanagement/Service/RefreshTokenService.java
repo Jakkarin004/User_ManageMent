@@ -35,6 +35,21 @@ public class RefreshTokenService {
         }
     }
 
+    public String findByUsername(String username) {
+        try {
+            return redisTemplate.opsForValue()
+                    .get(KEY_REFRESH_TOKEN + username);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while finding refresh token", e);
+        }
+    }
+
+
+    public boolean validate(String username, String refreshToken) {
+        String storedToken = findByUsername(username);
+        return storedToken != null && storedToken.equals(refreshToken);
+    }
+
 
 
 

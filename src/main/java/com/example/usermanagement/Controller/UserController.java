@@ -43,6 +43,11 @@ public class UserController {
         return userService.getAllUser();
     }
 
+    @GetMapping("/user-by-id/{id}")
+    public UserResponDTO getUserById(@PathVariable UUID id){
+        return userService.getUserById(id);
+    }
+
 
 
 

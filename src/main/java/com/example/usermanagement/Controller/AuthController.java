@@ -2,6 +2,7 @@ package com.example.usermanagement.Controller;
 
 import com.example.usermanagement.DTO.Request.LoginRequestDTO;
 import com.example.usermanagement.DTO.Request.UserRequestDTO;
+import com.example.usermanagement.DTO.Response.AccessTokenResponseDTO;
 import com.example.usermanagement.DTO.Response.LoginResponDTO;
 import com.example.usermanagement.Service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,14 @@ public class AuthController {
         LoginResponDTO loginResponDTO = authService.login(request,response);
         return ResponseEntity.ok(loginResponDTO);
     }
+
+    //postman test
+    @PostMapping("/refresh")
+    public ResponseEntity<AccessTokenResponseDTO> refreshAccessToken(@CookieValue(name = "refresh_token", required = false) String refreshToken) {
+        AccessTokenResponseDTO newAccessToken = authService.refreshAccessToken(refreshToken);
+        return ResponseEntity.ok(newAccessToken);
+    }
+
 
 
 }

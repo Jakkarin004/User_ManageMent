@@ -2,6 +2,7 @@ package com.example.usermanagement.Service;
 
 import com.example.usermanagement.DTO.Request.LoginRequestDTO;
 import com.example.usermanagement.DTO.Request.UserRequestDTO;
+import com.example.usermanagement.DTO.Response.AccessTokenResponseDTO;
 import com.example.usermanagement.DTO.Response.LoginResponDTO;
 import com.example.usermanagement.Entity.UserEntity;
 import com.example.usermanagement.Repository.UserRepository;
@@ -16,11 +17,11 @@ import java.util.Date;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final jwtService jwtService;
+    private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
 
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, jwtService jwtService, RefreshTokenService refreshTokenService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -45,8 +46,6 @@ public class AuthService {
     }
 
     public LoginResponDTO login(LoginRequestDTO request, HttpServletResponse response){
-        System.out.println(request.getEmail());
-        System.out.println(request.getPassword());
 
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
@@ -74,5 +73,28 @@ public class AuthService {
         loginResponse.setPhone(user.getPhone());
         loginResponse.setRole(user.getRole());
         return loginResponse;
+    }
+
+    public AccessTokenResponseDTO refreshAccessToken(String refreshToken) {
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new RuntimeException("Refresh token missing");
+        }
+
+        String username = jwtService.extractUsername(refreshToken);
+
+        if (!refreshTokenService.validate(username, refreshToken)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken =
+                jwtService.generateAccessToken(user.getUsername(), user.getRole());
+
+        AccessTokenResponseDTO response = new AccessTokenResponseDTO();
+        response.setAccessToken(newAccessToken);
+        return response;
     }
 }

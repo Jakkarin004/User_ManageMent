@@ -1,6 +1,8 @@
 package com.example.usermanagement.Service;
 
 import com.example.usermanagement.Config.JwtConfig;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
@@ -8,11 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 
 @Service
-public class jwtService {
+public class JwtService {
 
     private final JwtConfig jwtConfig;
 
-    public jwtService(JwtConfig jwtConfig){
+    public JwtService(JwtConfig jwtConfig){
         this.jwtConfig = jwtConfig;
     }
 
@@ -42,6 +44,36 @@ public class jwtService {
                     .compact();
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate refresh token", e);
+        }
+    }
+
+    public String extractUsername(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(jwtConfig.getSecret().getBytes())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("JWT token expired", e);
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid JWT token", e);
+        }
+    }
+
+    public String extractRole(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(jwtConfig.getSecret().getBytes())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("role", String.class);
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("JWT token expired", e);
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid JWT token", e);
         }
     }
 }

@@ -70,17 +70,42 @@ public class UserService {
     }
 
     public List<UserResponDTO> getAllUser(){
-        List<UserEntity> user = userRepository.findAll();
-        List<UserResponDTO> list = new ArrayList<>();
+        try {
+            List<UserEntity> user = userRepository.findAll();
+            List<UserResponDTO> list = new ArrayList<>();
 
-        for(UserEntity userEntity : user){
-            UserResponDTO userResponDTO = new UserResponDTO();
-            userResponDTO.setUsername(userEntity.getUsername());
-            userResponDTO.setEmail(userEntity.getEmail());
-            userResponDTO.setPhone(userEntity.getPhone());
-            userResponDTO.setRole(userEntity.getRole());
-            list.add(userResponDTO);
+            for(UserEntity userEntity : user){
+                UserResponDTO userResponDTO = new UserResponDTO();
+                userResponDTO.setUsername(userEntity.getUsername());
+                userResponDTO.setEmail(userEntity.getEmail());
+                userResponDTO.setPhone(userEntity.getPhone());
+                userResponDTO.setRole(userEntity.getRole());
+                list.add(userResponDTO);
+            }
+            return list;
+        }catch (Exception e){
+//            e.printStackTrace();
+            throw new RuntimeException("server error",e);
         }
-        return list;
     }
+
+    public UserResponDTO getUserById(UUID id){
+        try{
+            UserEntity user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("user not found"));
+
+            UserResponDTO dto = new UserResponDTO();
+
+            dto.setUsername(user.getUsername());
+            dto.setEmail(user.getEmail());
+            dto.setPhone(user.getPhone());
+            dto.setRole(user.getRole());
+            return dto;
+        }catch (Exception e){
+//            e.printStackTrace();
+            throw new RuntimeException("server error",e);
+        }
+    }
+
+
 }
